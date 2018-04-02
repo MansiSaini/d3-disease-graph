@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        .node circle {
+            cursor: pointer;
+            stroke: #eeeeee;
+            stroke-width: 1.5px;
+        }
+
+        .node text {
+            font: 14px sans-serif;
+            pointer-events: none;
+            text-anchor: middle;
+            font-weight: bold;
+        }
+
+        line.link {
+            fill: none;
+            stroke: #eeeeee;
+            stroke-width: 2px;
+        }
+    </style>
+</head>
+<body>
+<button onclick="updatingNewData(root2)">Click Me</button>
+<br>
+<span>Objective: When button is clicked, data is updated. Some old and some new.
+We want it to add the new nodes, but update the old ones without redrawing.
+For instance, the radius of the bubble will change and the color will change
+based on the update. And it should have an evolving effect so the user can
+visually see the evolution without losing track of the nodes they have expanded.</span>
+<svg width="960" height="50"></svg>
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<script>
+  var width = 960,
+    height = 600;
+
+  var root = {
+    "name": "Twitter",
+    "children": [
+      {
+        "name": "#NationalPuppyDay",
+        "labelsApplied": "21",
+        "toxicityDensity": "90",
+        "children": [
+          {"name": "Accusatory", "size": 3938},
+          {"name": "Prejudice", "size": 3812},
+          {"name": "Threat", "size": 6714},
+          {"name": "Sexual", "size": 3462},
+          {"name": "Shaming", "size": 2634},
+          {"name": "Fraud", "size": 7263},
+          {"name": "Misinformation", "size": 2536},
+          {"name": "Aggressive", "size": 4521},
+          {"name": "Doxing", "size": 3543},
+          {"name": "Spam", "size": 3627},
+          {"name": "Insensitive", "size": 4362},
+          {"name": "Off-Topic", "size": 2536},
+          {"name": "Acceptable", "size": 4637},
+          {"name": "Kind", "size": 5783},
+          {"name": "Reporting", "size": 2346},
+          {"name": "Informative", "size": 3521},
+          {"name": "Curious", "size": 4627},
+          {"name": "Feedback", "size": 5461},
+          {"name": "Testimonial", "size": 4526},
+          {"name": "Supportive", "size": 3425},
+          {"name": "Protective", "size": 2345}
+        ]
+      },
+      {
+        "name": "#art",
+        "labelsApplied": "16",
+        "toxicityDensity": "56",
+        "children": [
+          {"name": "Accusatory", "size": 3938},
+          {"name": "Prejudice", "size": 3812},
+          {"name": "Threat", "size": 6714},
+          {"name": "Sexual", "size": 3462},
+          {"name": "Shaming", "size": 2634},
+          {"name": "Fraud", "size": 7263},
+          {"name": "Misinformation", "size": 2536},
+          {"name": "Aggressive", "size": 4521},
+          {"name": "Doxing", "size": 3543},
+          {"name": "Spam", "size": 3627},
+          {"name": "Insensitive", "size": 4362},
+          {"name": "Off-Topic", "size": 2536},
+          {"name": "Acceptable", "size": 4637},
+          {"name": "Kind", "size": 5783},
+          {"name": "Reporting", "size": 2346},
+          {"name": "Informative", "size": 3521},
+        ]
+      },
+      {
+        "name": "#friends",
+        "labelsApplied": "9",
+        "toxicityDensity": "65",
+        "children": [
+          {"name": "Accusatory", "size": 3938},
+          {"name": "Prejudice", "size": 3812},
+          {"name": "Threat", "size": 6714},
+          {"name": "Sexual", "size": 3462},
+          {"name": "Shaming", "size": 2634},
+          {"name": "Fraud", "size": 7263},
+          {"name": "Misinformation", "size": 2536},
+          {"name": "Aggressive", "size": 4521},
+          {"name": "Doxing", "size": 3543},
+        ]
+      },
+      {
+        "name": "#repost",
+        "labelsApplied": "18",
+        "toxicityDensity": "78",
+        "children": [
+          {"name": "Accusatory", "size": 3938},
+          {"name": "Prejudice", "size": 3812},
+          {"name": "Threat", "size": 6714},
+          {"name": "Sexual", "size": 3462},
+          {"name": "Shaming", "size": 2634},
+          {"name": "Fraud", "size": 7263},
+          {"name": "Misinformation", "size": 2536},
+          {"name": "Aggressive", "size": 4521},
+          {"name": "Doxing", "size": 3543},
+          {"name": "Spam", "size": 3627},
+          {"name": "Insensitive", "size": 4362},
+          {"name": "Off-Topic", "size": 2536},
+          {"name": "Acceptable", "size": 4637},
+          {"name": "Kind", "size": 5783},
+          {"name": "Reporting", "size": 2346},
+          {"name": "Informative", "size": 3521},
+          {"name": "Curious", "size": 4627},
+          {"name": "Feedback", "size": 5461},
+        ]
+      },
+      {
+        "name": "#nofilter",
+        "labelsApplied": "6",
+        "toxicityDensity": "20",
+        "children": [
+          {"name": "Accusatory", "size": 3938},
+          {"name": "Prejudice", "size": 3812},
+          {"name": "Threat", "size": 6714},
+          {"name": "Sexual", "size": 3462},
+          {"name": "Shaming", "size": 2634},
+          {"name": "Fraud", "size": 7263}
+        ]
+      }
+    ]
+  };
+
+
+  var root2 = {
+    "name": "Twitter",
+    "children": [
+      {
+        "name": "#NationalPuppyDay",
+        "labelsApplied": "21",
+        "toxicityDensity": "90",
+        "children": [
+          {"name": "Accusatory", "size": 3938},
+          {"name": "Prejudice", "size": 3812},
+          {"name": "Threat", "size": 6714},
+          {"name": "Sexual", "size": 3462},
+          {"name": "Shaming", "size": 2634},
+          {"name": "Fraud", "size": 7263},
+          {"name": "Misinformation", "size": 2536},
+          {"name": "Aggressive", "size": 4521},
+          {"name": "Doxing", "size": 3543},
+          {"name": "Spam", "size": 3627},
+          {"name": "Insensitive", "size": 4362},
+          {"name": "Off-Topic", "size": 2536},
+          {"name": "Acceptable", "size": 4637},
+          {"name": "Kind", "size": 5783},
+          {"name": "Reporting", "size": 2346},
+          {"name": "Informative", "size": 3521},
+          {"name": "Curious", "size": 4627},
+          {"name": "Feedback", "size": 5461},
+          {"name": "Testimonial", "size": 4526},
+          {"name": "Supportive", "size": 3425},
+          {"name": "Protective", "size": 2345}
+        ]
+      },
+      {
+        "name": "#art",
+        "labelsApplied": "16",
+        "toxicityDensity": "56",
+        "children": [
+          {"name": "Accusatory", "size": 3938},
+          {"name": "Prejudice", "size": 3812},
+          {"name": "Threat", "size": 6714},
+          {"name": "Sexual", "size": 3462},
+          {"name": "Shaming", "size": 2634},
+          {"name": "Fraud", "size": 7263},
+          {"name": "Misinformation", "size": 2536},
+          {"name": "Aggressive", "size": 4521},
+          {"name": "Doxing", "size": 3543},
+          {"name": "Spam", "size": 3627},
+          {"name": "Insensitive", "size": 4362},
+          {"name": "Off-Topic", "size": 2536},
+          {"name": "Acceptable", "size": 4637},
+          {"name": "Kind", "size": 5783},
+          {"name": "Reporting", "size": 2346},
+          {"name": "Informative", "size": 3521},
+        ]
+      },
+      {
+        "name": "#friends",
+        "labelsApplied": "9",
+        "toxicityDensity": "65",
+        "children": [
+          {"name": "Accusatory", "size": 3938},
+          {"name": "Prejudice", "size": 3812},
+          {"name": "Threat", "size": 6714},
+          {"name": "Sexual", "size": 3462},
+          {"name": "Shaming", "size": 2634},
+          {"name": "Fraud", "size": 7263},
+          {"name": "Misinformation", "size": 2536},
+          {"name": "Aggressive", "size": 4521},
+          {"name": "Doxing", "size": 3543},
+        ]
+      },
+      {
+        "name": "#repost",
+        "labelsApplied": "18",
+        "toxicityDensity": "78",
+        "children": [
+          {"name": "Accusatory", "size": 3938},
+          {"name": "Prejudice", "size": 3812},
+          {"name": "Threat", "size": 6714},
+          {"name": "Sexual", "size": 3462},
+          {"name": "Shaming", "size": 2634},
+          {"name": "Fraud", "size": 7263},
+          {"name": "Misinformation", "size": 2536},
+          {"name": "Aggressive", "size": 4521},
+          {"name": "Doxing", "size": 3543},
+          {"name": "Spam", "size": 3627},
+          {"name": "Insensitive", "size": 4362},
+          {"name": "Off-Topic", "size": 2536},
+          {"name": "Acceptable", "size": 4637},
+          {"name": "Kind", "size": 5783},
+          {"name": "Reporting", "size": 2346},
+          {"name": "Informative", "size": 3521},
+          {"name": "Curious", "size": 4627},
+          {"name": "Feedback", "size": 5461},
+        ]
+      },
+      {
+        "name": "#christmas",
+        "labelsApplied": "7",
+        "toxicityDensity": "82",
+        "children": [
+          {"name": "Accusatory", "size": 3938},
+          {"name": "Prejudice", "size": 3812},
+          {"name": "Threat", "size": 6714},
+          {"name": "Sexual", "size": 3462},
+          {"name": "Shaming", "size": 2634},
+          {"name": "Fraud", "size": 7263},
+          {"name": "Misinformation", "size": 2536},
+        ]
+      },
+      {
+        "name": "#TheOffice",
+        "labelsApplied": "13",
+        "toxicityDensity": "62",
+        "children": [
+          {"name": "Accusatory", "size": 3938},
+          {"name": "Prejudice", "size": 3812},
+          {"name": "Threat", "size": 6714},
+          {"name": "Sexual", "size": 3462},
+          {"name": "Shaming", "size": 2634},
+          {"name": "Fraud", "size": 7263},
+          {"name": "Misinformation", "size": 2536},
+          {"name": "Aggressive", "size": 4521},
+          {"name": "Doxing", "size": 3543},
+          {"name": "Spam", "size": 3627},
+          {"name": "Insensitive", "size": 4362},
+          {"name": "Off-Topic", "size": 2536},
+          {"name": "Acceptable", "size": 4637},
+        ]
+      },
+      {
+        "name": "#ImHungry",
+        "labelsApplied": "5",
+        "toxicityDensity": "18",
+        "children": [
+          {"name": "Accusatory", "size": 3938},
+          {"name": "Prejudice", "size": 3812},
+          {"name": "Threat", "size": 6714},
+          {"name": "Sexual", "size": 3462},
+          {"name": "Shaming", "size": 2634},
+        ]
+      },
+      {
+        "name": "#SpreadLoveNotHate",
+        "labelsApplied": "21",
+        "toxicityDensity": "95",
+        "children": [
+          {"name": "Accusatory", "size": 3938},
+          {"name": "Prejudice", "size": 3812},
+          {"name": "Threat", "size": 6714},
+          {"name": "Sexual", "size": 3462},
+          {"name": "Shaming", "size": 2634},
+          {"name": "Fraud", "size": 7263},
+          {"name": "Misinformation", "size": 2536},
+          {"name": "Aggressive", "size": 4521},
+          {"name": "Doxing", "size": 3543},
+          {"name": "Spam", "size": 3627},
+          {"name": "Insensitive", "size": 4362},
+          {"name": "Off-Topic", "size": 2536},
+          {"name": "Acceptable", "size": 4637},
+          {"name": "Kind", "size": 5783},
+          {"name": "Reporting", "size": 2346},
+          {"name": "Informative", "size": 3521},
+          {"name": "Curious", "size": 4627},
+          {"name": "Feedback", "size": 5461},
+          {"name": "Testimonial", "size": 4526},
+          {"name": "Supportive", "size": 3425},
+          {"name": "Protective", "size": 2345}
+        ]
+      },
+      {
+        "name": "#photography",
+        "labelsApplied": "14",
+        "toxicityDensity": "74",
+        "children": [
+          {"name": "Accusatory", "size": 3938},
+          {"name": "Prejudice", "size": 3812},
+          {"name": "Threat", "size": 6714},
+          {"name": "Sexual", "size": 3462},
+          {"name": "Shaming", "size": 2634},
+          {"name": "Fraud", "size": 7263},
+          {"name": "Misinformation", "size": 2536},
+          {"name": "Aggressive", "size": 4521},
+          {"name": "Doxing", "size": 3543},
+          {"name": "Spam", "size": 3627},
+          {"name": "Insensitive", "size": 4362},
+          {"name": "Off-Topic", "size": 2536},
+          {"name": "Acceptable", "size": 4637},
+          {"name": "Kind", "size": 5783},
+        ]
+      },
+      {
+        "name": "#mensfashion",
+        "labelsApplied": "15",
+        "toxicityDensity": "78",
+        "children": [
+          {"name": "Accusatory", "size": 3938},
+          {"name": "Prejudice", "size": 3812},
+          {"name": "Threat", "size": 6714},
+          {"name": "Sexual", "size": 3462},
+          {"name": "Shaming", "size": 2634},
+          {"name": "Fraud", "size": 7263},
+          {"name": "Misinformation", "size": 2536},
+          {"name": "Aggressive", "size": 4521},
+          {"name": "Doxing", "size": 3543},
+          {"name": "Spam", "size": 3627},
+          {"name": "Insensitive", "size": 4362},
+          {"name": "Off-Topic", "size": 2536},
+          {"name": "Acceptable", "size": 4637},
+          {"name": "Kind", "size": 5783},
+          {"name": "Reporting", "size": 2346},
+        ]
+      },
+      {
+        "name": "#foodporn",
+        "labelsApplied": "9",
+        "toxicityDensity": "27",
+        "children": [
+          {"name": "Accusatory", "size": 3938},
+          {"name": "Prejudice", "size": 3812},
+          {"name": "Threat", "size": 6714},
+          {"name": "Sexual", "size": 3462},
+          {"name": "Shaming", "size": 2634},
+          {"name": "Fraud", "size": 7263},
+          {"name": "Misinformation", "size": 2536},
+          {"name": "Aggressive", "size": 4521},
+          {"name": "Doxing", "size": 3543},
+        ]
+      },
+      {
+        "name": "#workout",
+        "labelsApplied": "12",
+        "toxicityDensity": "64",
+        "children": [
+          {"name": "Accusatory", "size": 3938},
+          {"name": "Prejudice", "size": 3812},
+          {"name": "Threat", "size": 6714},
+          {"name": "Sexual", "size": 3462},
+          {"name": "Shaming", "size": 2634},
+          {"name": "Fraud", "size": 7263},
+          {"name": "Misinformation", "size": 2536},
+          {"name": "Aggressive", "size": 4521},
+          {"name": "Doxing", "size": 3543},
+          {"name": "Spam", "size": 3627},
+          {"name": "Insensitive", "size": 4362},
+          {"name": "Off-Topic", "size": 2536},
+        ]
+      }
+    ]
+  };
+
+  //initialising hierarchical data
+  root = d3.hierarchy(root);
+  root2 = d3.hierarchy(root2);
+
+  var i = 0;
+
+  var nodeSvg, linkSvg, simulation, nodeEnter, linkEnter;
+
+  var svg = d3.select("body").append("svg")
+    .attr("width", width)
+    .attr("height", height)
+    .append("g");
+
+  simulation = d3.forceSimulation()
+    .force("link", d3.forceLink().id(function (d) {
+      return d.id;
+    }))
+    .force("charge", d3.forceManyBody())
+    .force("center", d3.forceCenter(width / 2, height / 2))
+    .on("tick", ticked);
+
+  flatten(root);
+  setParents(root, null);
+  collapseAll(root);
+  root.children = root._children;
+  root._children = null;
+  update(root);
+
+  function update(root) {
+    var nodes = flatten(root);
+    var links = root.links();
+
+    var transition = d3.transition().duration(750);
+
+    linkSvg = svg.selectAll(".link")
+      .data(links, function (d) {
+        return d.target.id;
+      });
+
+    linkSvg.exit()
+      .transition(transition)
+      .style("fill-opacity", 1e-6)
+      .remove();
+
+    linkSvg
+      .transition(transition)
+      .style("fill-opacity", 1);
+
+    linkEnter = linkSvg.enter()
+      .append("line")
+      .attr("class", "link")
+      .style("fill-opacity", 1);
+
+    linkSvg = linkEnter.merge(linkSvg);
+
+    nodeSvg = svg.selectAll(".node")
+      .data(nodes, function (d) {
+        return d.id;
+      })
+      .style("fill", color);
+
+    nodeSvg.exit()
+      .transition(transition)
+      .style("fill-opacity", 1e-6)
+      .remove();
+
+    nodeEnter = nodeSvg.enter()
+      .append("g")
+      .attr("class", "node")
+      .on("click", click)
+      .style("fill", color)
+      .call(d3.drag()
+        .on("start", dragstarted)
+        .on("drag", dragged)
+        .on("end", dragended));
+
+    nodeEnter.append("circle")
+      .attr("r", this.radius);
+
+    nodeSvg = nodeEnter.merge(nodeSvg);
+
+    simulation
+      .nodes(nodes);
+
+    simulation.force("link")
+      .links(links);
+  }
+
+  function radius(d) {
+    if (d._children) {
+      return d.data.labelsApplied || 5;
+    } else if (d.children) {
+      return 5;
+    }
+    return Math.sqrt(d.data.size) / 10;
+  }
+
+  function color(d) {
+    if (d._children || d.children) {
+      var density = d.data.toxicityDensity;
+      if (density < 10) {
+        return '#327004';
+      } else if (density < 19) {
+        return '#58C507';
+      } else if (density < 29) {
+        return '#89F737';
+      } else if (density < 39) {
+        return '#ABF970';
+      } else if (density < 49) {
+        return '#CCFBA9';
+      } else if (density < 59) {
+        return '#FFCCCC';
+      } else if (density < 69) {
+        return '#FFA5A5';
+      } else if (density < 79) {
+        return '#FC7272';
+      } else if (density < 89) {
+        return '#FD0000';
+      } else if (density < 100) {
+        return '#A50000';
+      } else {
+        return '#0c0b57';
+      }
+    }
+    //color for the labels
+    switch (d.data.name) {
+      case 'Doxing':
+        return '#7F0136';
+      case 'Threat':
+        return '#E00360';
+      case 'Sexual':
+        return '#FC6FAB';
+      case 'Shaming':
+        return '#FEC6DE';
+      case 'Prejudice':
+        return '#FE5105';
+      case 'Aggressive':
+        return ' #FF9B00';
+      case 'Accusatory':
+        return '#FF844E';
+      case 'Fraud':
+        return '#FEA67F';
+      case 'Insensitive':
+        return '#E1A000';
+      case 'Misinformation':
+        return '#FFC63A';
+      case 'Spam':
+        return '#FFEB09';
+      case 'Off-topic':
+        return '#FEF697';
+      case 'Acceptable':
+        return ' #B3E6FE';
+      case 'Curious:':
+        return '#09B0FB';
+      case 'Informative':
+        return '#01587F';
+      case 'Kind':
+        return '#6F9FF6';
+      case 'Testimonial':
+        return ' #DFCEF2';
+      case 'Supportive':
+        return '#C19FE7';
+      case 'Feedback':
+        return '#9A78BC';
+      case 'Protective':
+        return '#7831C7';
+      case 'Reporting':
+        return '#411A6C';
+    }
+  }
+
+  function ticked() {
+    linkSvg
+      .attr("x1", function (d) {
+        return d.source.x;
+      })
+      .attr("y1", function (d) {
+        return d.source.y;
+      })
+      .attr("x2", function (d) {
+        return d.target.x;
+      })
+      .attr("y2", function (d) {
+        return d.target.y;
+      });
+
+    nodeSvg
+      .attr("transform", function (d) {
+        return "translate(" + d.x + ", " + d.y + ")";
+      });
+  }
+
+  function click(d) {
+    if (d.children) {
+      d._children = d.children;
+      d.children = null;
+    } else {
+      d.children = d._children;
+      d._children = null;
+    }
+    simulation.restart();
+    update(root);
+  }
+
+  function dragstarted(d) {
+    if (!d3.event.active) simulation.alphaTarget(0.3).restart();
+    d.fx = d.x;
+    d.fy = d.y;
+  }
+
+  function dragged(d) {
+    d.fx = d3.event.x;
+    d.fy = d3.event.y;
+  }
+
+  function dragended(d) {
+    if (!d3.event.active) simulation.alphaTarget(0);
+    d.fx = null;
+    d.fy = null;
+  }
+
+  function flatten(root) {
+    // hierarchical data to flat data for force layout
+    var nodes = [];
+
+    function recurse(node) {
+      if (node.children) node.children.forEach(recurse);
+      if (!node.id) node.id = ++i;
+      else ++i;
+      nodes.push(node);
+    }
+
+    recurse(root);
+    return nodes;
+  }
+
+  function collapseAll(d) {
+    if (d.children) {
+      d.children.forEach(this.collapseAll);
+      d._children = d.children;
+      d.children = null;
+    }
+    else if (d._children) {
+      d._children.forEach(this.collapseAll);
+    }
+  }
+
+  function setParents(d, p) {
+    d._parent = p;
+    if (d.children) {
+      for (var e in d.children) {
+        setParents(e, d);
+      }
+    }
+    else if (d._children) {
+      for (var f in d._children) {
+        setParents(f, d);
+      }
+    }
+  }
+
+  function updatingNewData(root2) {
+    simulation = d3.forceSimulation()
+      .force("link", d3.forceLink().id(function (d) {
+        return d.id;
+      }))
+      .force("charge", d3.forceManyBody())
+      .force("center", d3.forceCenter(width / 2, height / 2))
+      .on("tick", ticked);
+
+    flatten(root2);
+    setParents(root2, null);
+    collapseAll(root2);
+    root2.children = root2._children;
+    root2._children = null;
+    update(root2);
+  }
+
+</script>
+</body>
+</html>
